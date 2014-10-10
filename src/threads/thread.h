@@ -100,6 +100,10 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
+	
+   /*added data structures */
+   int64_t ticks;
+   struct list_elem block_elem;
   };
 
 /* If false (default), use round-robin scheduler.

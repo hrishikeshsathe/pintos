@@ -16,10 +16,11 @@
 #if TIMER_FREQ > 1000
 #error TIMER_FREQ <= 1000 recommended
 #endif
+/* added data structures */
+static struct list block_list;
 
 /* Number of timer ticks since OS booted. */
 static int64_t ticks;
-static struct list block_list;
 
 /* Number of loops per timer tick.
    Initialized by timer_calibrate(). */
@@ -38,6 +39,8 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
+  /*changed code */
+  list_init(&block_list);
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -90,12 +93,19 @@ timer_elapsed (int64_t then)
 void
 timer_sleep (int64_t ticks) 
 {
-  int64_t start = timer_ticks ();
-
   ASSERT (intr_get_level () == INTR_ON);
+  thread_current()->ticks = ticks - timer_elapsed(timer_ticks());
+  if(thread_current()->ticks <=0)
+  {
+     thread_yield();
+     return;
+  }//end if
   
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
+  intr_disable();
+  list_push_back(&block_list, &thread_current()->block_elem);
+  thread_block();
+  intr_enable();
+
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -172,6 +182,17 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
+  struct list_elem *e;
+  for(e = list_begin(&block_list); e!=list_end(&block_list); e = list_next(e))
+  {
+     struct thread *t = list_entry(e, struct thread, block_elem);
+//     t->ticks--;
+     if(t->ticks <=0)
+     {
+        thread_unblock(t);
+        list_remove(&t->block_elem);
+     }//end if
+  }//end for
   ticks++;
   thread_tick ();
 }
