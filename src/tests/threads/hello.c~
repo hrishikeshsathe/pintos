@@ -1,8 +1,0 @@
-#include<stdio.h>
-#include<tests.h>
-void 
-test_hello(void)
-{
-printf("hello world");
-pass ();
-}
