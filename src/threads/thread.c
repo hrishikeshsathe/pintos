@@ -247,6 +247,7 @@ thread_unblock (struct thread *t)
   list_sort(&ready_list, (list_less_func *) &compare_priority, NULL);
   t->status = THREAD_READY;
   intr_set_level (old_level);
+    
 }
 
 /* Returns the name of the running thread. */
@@ -614,3 +615,7 @@ bool compare_priority (const struct list_elem *a,
   return false;
 }
 
+struct list * return_ready_list()
+{
+ return &ready_list;
+}
