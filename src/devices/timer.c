@@ -182,6 +182,8 @@ timer_print_stats (void)
 static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
+ticks++;
+  thread_tick ();
   struct list_elem *e;
   for(e = list_begin(&block_list); e!=list_end(&block_list); e = list_next(e))
   {
@@ -193,8 +195,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
         list_remove(&t->block_elem);
      }//end if
   }//end for
-  ticks++;
-  thread_tick ();
+
   if(thread_mlfqs)
   {
     recent_cpu_increment();
@@ -211,6 +212,9 @@ timer_interrupt (struct intr_frame *args UNUSED)
       calculate_all_priority_new();
     }
   }
+
+
+  
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
