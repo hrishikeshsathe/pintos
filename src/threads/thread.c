@@ -623,20 +623,29 @@ bool compare_priority (const struct list_elem *a,
   return false;
 }
 
+/*return the ready list*/
 struct list * return_ready_list()
 {
  return &ready_list;
 }
 
+/*calculate the load average*/
 void calculate_load_average_value()
 {
   //load_avg = (59/60)*load_avg + (1/60)*ready_threads
   int temp = 0, temp1 = 0;
   temp = (1 * f)/60;
   temp1 = (59 * f)/60;
-  load_average = ((int64_t) load_average) * temp1/f + (temp * list_size(&ready_list)); 
+  int number_of_threads = list_size(&ready_list);
+  if(thread_current() != idle_thread)
+  {
+    number_of_threads = number_of_threads+1;
+  }
+ 
+  load_average = ((int64_t) load_average) * temp1/f + (temp * number_of_threads) ; 
 }
 
+/*increment the value of recent cpu by 1*/
 void recent_cpu_increment(){
   int temp ; 
   if(thread_current() != idle_thread)
@@ -654,6 +663,7 @@ void recent_cpu_increment(){
    }
 }
 
+/*calculate recent cpu value for all threads*/
 void calculate_recent_cpu_value()
 {
  //recent_cpu = (2*load_avg )/(2*load_avg + 1) * recent_cpu + nice
@@ -674,12 +684,14 @@ void calculate_recent_cpu_value()
   }
  }
 
+/*update the priority of the current thread based on new nice value*/
 void calculate_priority_new()
 {
+ //priority = PRI_MAX - (recent_cpu / 4) - (nice * 2).
   int temp1; //recent_cpu/4)
   int temp2; //nice*2
   int temp3;
- //priority = PRI_MAX - (recent_cpu / 4) - (nice * 2).
+
    temp1 = thread_current()->recent_cpu / 4;
    temp1 = temp1/f;
    temp2 = thread_current()->nice * 2;
@@ -687,12 +699,14 @@ void calculate_priority_new()
    thread_set_priority(temp3);
 }
 
+/*update the priority of all threads*/
 void calculate_all_priority_new()
 {
+ //priority = PRI_MAX - (recent_cpu / 4) - (nice * 2).
   int temp1; //recent_cpu/4)
   int temp2; //nice*2
   int temp3;
- //priority = PRI_MAX - (recent_cpu / 4) - (nice * 2).
+
   struct list_elem *e;
   for(e = list_begin(&all_list); e!=list_end(&all_list); e = list_next(e))
   {
@@ -704,6 +718,7 @@ void calculate_all_priority_new()
      t->priority = temp3;
   }
 }
+/*convert from fixed point to integer*/
  int convert_to_int(int x)
  {
    if(x>=0)
@@ -714,5 +729,6 @@ void calculate_all_priority_new()
    {
      return  (x-f/2)/f;
    }
+   
  }
 

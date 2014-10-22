@@ -201,6 +201,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
 
     if(timer_ticks() % TIMER_FREQ == 0)
     {
+
        calculate_load_average_value();
        calculate_recent_cpu_value();
          
