@@ -103,6 +103,8 @@ struct thread
 	
    /*added data structures */
    int64_t ticks;
+   int nice;
+   int recent_cpu;
    struct list_elem block_elem;
   };
 
@@ -147,4 +149,10 @@ bool compare_priority (const struct list_elem *a,
 		   const struct list_elem *b,
 		   void *aux UNUSED);
 struct list * return_ready_list();
+void calculate_load_average_value();
+void calculate_recent_cpu_value();
+void calculate_priority_new();
+void recent_cpu_increment();
+void calculate_all_priority_new();
+int convert_to_int(int x);
 #endif /* threads/thread.h */
